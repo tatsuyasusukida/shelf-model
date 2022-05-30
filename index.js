@@ -6,26 +6,19 @@ const Sequelize = require('sequelize');
 const winston = require('winston');
 const basename = path.basename(__filename);
 const env = process.env.NODE_ENV || 'development';
-const config = {
-  username: process.env.DB_USERNAME,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_DATABASE,
-  host: process.env.DB_HOST,
-  dialect: process.env.DB_DIALECT,
-  dialectOptions: {
-    socketPath: process.env.DB_SOCKET,
-  },
-  logging: message => winston.loggers.get('query').info(message),
-  logQueryParameters: true
-};
 const db = {};
+const dialectOptions = process.env.DB_IS_SSL === '1'
+  ? {
+    ssl: {
+      rejectUnauthorized: true,
+    },
+  } : {}
 
-let sequelize;
-if (config.use_env_variable) {
-  sequelize = new Sequelize(process.env[config.use_env_variable], config);
-} else {
-  sequelize = new Sequelize(config.database, config.username, config.password, config);
-}
+const sequelize = new Sequelize(process.env.DB_URL, {
+  logging: message => winston.loggers.get('query').info(message),
+  logQueryParameters: true,
+  dialectOptions,
+});
 
 fs
   .readdirSync(__dirname)

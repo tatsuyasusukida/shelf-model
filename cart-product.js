@@ -4,17 +4,20 @@ module.exports = function (sequelize, DataTypes) {
   }, {freezeTableName: true})
 
   cartProduct.associate = function (model) {
-    cartProduct.belongsTo(model.cart, {
-      as: 'cart',
-      foreignKey: {allowNull: false},
-      onDelete: 'cascade',
-    })
+    const options = (as) => process.env.DB_IS_VITESS === '1'
+      ? {
+        as,
+        foreignKey: {allowNull: false},
+        constraints: false,
+      } : {
+        as,
+        foreignKey: {allowNull: false},
+        onDelete: 'cascade',
+        onUpdate: 'cascade',
+      }
 
-    cartProduct.belongsTo(model.product, {
-      as: 'product',
-      foreignKey: {allowNull: false},
-      onDelete: 'cascade',
-    })
+    cartProduct.belongsTo(model.cart, options('cart'))
+    cartProduct.belongsTo(model.product, options('product'))
   }
 
   return cartProduct
